@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">KazWeather</string>
+    <string name="hint">Введите название города</string>
+    <string name="weather_api_key">24d8e9bb34dd3eb5f7217529b96226d4</string>
+    <string name="places_api_key">AIzaSyBKrFfYBKkTUPrzDQ4rBmdctLlQBOFw0M0</string>
+    <string name="error">Ошибка</string>
+
+</resources>
