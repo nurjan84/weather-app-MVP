@@ -1,3 +1,3 @@
 # weather_sample_app
 
-Sample app to show how to implement Dagger, MVP (Moxy), RXJava, Retrofit, DiffUtils
+Sample Android app to show how to implement Dagger, MVP (Moxy), RXJava, Retrofit, DiffUtils in Kotlin
