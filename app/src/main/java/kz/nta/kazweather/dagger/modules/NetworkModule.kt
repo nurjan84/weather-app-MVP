@@ -18,7 +18,7 @@ import okhttp3.CacheControl
 @Module
 class NetworkModule{
 
-    @AppScope
+    /*@AppScope
     @Provides
     fun interceptor(context: Context): Interceptor {
         return Interceptor { chain ->
@@ -26,11 +26,25 @@ class NetworkModule{
             request.addHeader("Accept", "application/json")
             request.addHeader("Cache-Control", "public, max-age=" + 3600)
             if (!Utils.isNetworkConnected(context)) {
-                val cacheControl = CacheControl.Builder()
-                        .maxStale(1, TimeUnit.HOURS)
-                        .build()
-                request .cacheControl(cacheControl)
+            val cacheControl = CacheControl.Builder()
+                    .maxStale(1, TimeUnit.HOURS)
+                    .build()
+            request .cacheControl(cacheControl)
             }
+            chain.proceed(request.build())
+        }
+    }*/
+
+    @AppScope
+    @Provides
+    fun interceptor(): Interceptor {
+        return Interceptor { chain ->
+            val request = chain.request().newBuilder()
+            request.addHeader("Accept", "application/json")
+            val cacheControl = CacheControl.Builder()
+                    .maxStale(1, TimeUnit.HOURS)
+                    .build()
+            request .cacheControl(cacheControl)
             chain.proceed(request.build())
         }
     }
