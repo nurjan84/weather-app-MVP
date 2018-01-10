@@ -8,11 +8,10 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
-import android.app.Application
 import android.content.Context
-import kz.nta.kazweather.utils.Utils
-import okhttp3.Cache
-import okhttp3.CacheControl
+import io.victoralbertos.jolyglot.GsonSpeaker
+import io.rx_cache2.internal.RxCache
+import kz.nta.kazweather.api.CacheProviders
 
 
 @Module
@@ -34,6 +33,23 @@ class NetworkModule{
             chain.proceed(request.build())
         }
     }*/
+    /* @AppScope
+   @Provides
+   fun provideHttpCache(context: Context): Cache {
+       val cacheSize :Long = 10 * 1024 * 1024
+       return Cache(context.cacheDir, cacheSize)
+   }*/
+
+
+
+    @AppScope
+    @Provides
+    fun rxCache(context: Context): CacheProviders {
+        return RxCache.Builder()
+            .setMaxMBPersistenceCache(5)
+            .persistence(context.cacheDir, GsonSpeaker())
+            .using(CacheProviders::class.java)
+    }
 
     @AppScope
     @Provides
@@ -41,10 +57,6 @@ class NetworkModule{
         return Interceptor { chain ->
             val request = chain.request().newBuilder()
             request.addHeader("Accept", "application/json")
-            val cacheControl = CacheControl.Builder()
-                    .maxStale(1, TimeUnit.HOURS)
-                    .build()
-            request .cacheControl(cacheControl)
             chain.proceed(request.build())
         }
     }
@@ -58,17 +70,10 @@ class NetworkModule{
         return logging
     }
 
-    @AppScope
-    @Provides
-    fun provideHttpCache(context: Context): Cache {
-        val cacheSize :Long = 10 * 1024 * 1024
-        return Cache(context.cacheDir, cacheSize)
-    }
 
     @AppScope
     @Provides
-    fun okHttpClient(interceptor: Interceptor, httpLoggingInterceptor: HttpLoggingInterceptor
-                     ,cache: Cache): OkHttpClient {
+    fun okHttpClient(interceptor: Interceptor, httpLoggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
         return if(BuildConfig.DEBUG){
             OkHttpClient().newBuilder()
                     .connectTimeout(20, TimeUnit.SECONDS)
@@ -77,11 +82,13 @@ class NetworkModule{
                     .addInterceptor(httpLoggingInterceptor)
                     .addInterceptor(interceptor)
                     .addNetworkInterceptor(interceptor)
-                    .cache(cache)
                     .build()
         }else{
             OkHttpClient().newBuilder()
-                    .addInterceptor(interceptor)
+                    .connectTimeout(20, TimeUnit.SECONDS)
+                    .readTimeout(20, TimeUnit.SECONDS)
+                    .writeTimeout(20, TimeUnit.SECONDS)
+                    .addNetworkInterceptor(interceptor)
                     .build()
         }
     }

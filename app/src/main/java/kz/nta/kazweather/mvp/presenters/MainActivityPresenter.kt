@@ -9,8 +9,10 @@ import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import io.rx_cache2.DynamicKey
 import kz.nta.kazweather.R
 import kz.nta.kazweather.WeatherApplication
+import kz.nta.kazweather.api.CacheProviders
 import kz.nta.kazweather.api.WeatherService
 import kz.nta.kazweather.dagger.components.DaggerServiceComponent
 import kz.nta.kazweather.mvp.models.WeatherModel
@@ -18,6 +20,7 @@ import kz.nta.kazweather.mvp.views.interfaces.MainActivityView
 import kz.nta.kazweather.utils.Logger
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+
 
 @InjectViewState
 class MainActivityPresenter @Inject constructor() : BasePresenter<MainActivityView>(){
@@ -29,12 +32,14 @@ class MainActivityPresenter @Inject constructor() : BasePresenter<MainActivityVi
     @Inject lateinit var apiService: WeatherService
     @Inject lateinit var context: Context
     @Inject lateinit var prefs: SharedPreferences
+    @Inject lateinit var cache: CacheProviders
 
     fun getWeather(input:EditText, activity:Activity){
 
         val placesKey = context.getString(R.string.places_api_key)
         val type = "(cities)"
         val weatherKey = context.getString(R.string.weather_api_key)
+
 
         // загружаем последний искомый тест, если есть
         input.setText(getLastInput())
@@ -60,8 +65,10 @@ class MainActivityPresenter @Inject constructor() : BasePresenter<MainActivityVi
                         // и создает новые, недожидаясь ответа от сервера.
                         // Посылаем запрос на получение списка городов по введенным буквам
                         .switchMap {
-                            it -> apiService.getCities(it, type, placesKey)
+                            it ->
+                            cache.getCities(apiService.getCities(it, type, placesKey), DynamicKey(it))
                                 .doOnError { activity.runOnUiThread({
+                                    Logger.i("doOnError")
                                     viewState.onHideLoader()
                                 })}
                                 .onErrorResumeNext(Observable.empty())
@@ -77,7 +84,7 @@ class MainActivityPresenter @Inject constructor() : BasePresenter<MainActivityVi
                             // создаем список запросов размером равный количесву найденных городов
                             it-> val listOfObservables = ArrayList<Observable<WeatherModel>>()
                             it.mapTo(listOfObservables) {
-                                apiService.getWeather(WeatherService.weatherBaseUrl, it, weatherKey)
+                                cache.getWeather(apiService.getWeather(WeatherService.weatherBaseUrl, it, weatherKey), DynamicKey(it))
                             }
                             // делаем один обзервер, который делает N запросов на погоду
                             Observable.zip(listOfObservables, {r -> r})
