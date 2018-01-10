@@ -80,7 +80,6 @@ class NetworkModule{
                     .readTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(20, TimeUnit.SECONDS)
                     .addInterceptor(httpLoggingInterceptor)
-                    .addInterceptor(interceptor)
                     .addNetworkInterceptor(interceptor)
                     .build()
         }else{

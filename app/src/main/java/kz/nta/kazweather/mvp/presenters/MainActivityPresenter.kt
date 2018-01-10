@@ -68,7 +68,6 @@ class MainActivityPresenter @Inject constructor() : BasePresenter<MainActivityVi
                             it ->
                             cache.getCities(apiService.getCities(it, type, placesKey), DynamicKey(it))
                                 .doOnError { activity.runOnUiThread({
-                                    Logger.i("doOnError")
                                     viewState.onHideLoader()
                                 })}
                                 .onErrorResumeNext(Observable.empty())
