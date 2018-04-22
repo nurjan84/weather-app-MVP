@@ -1,4 +1,4 @@
-# weather_sample_app MVP
+# weather_app MVP
 
 Sample Android app to show how to use Dagger, Moxy (MVP), RxJava, RxBindings, RxCache, Retrofit, DiffUtil in Kotlin
 
